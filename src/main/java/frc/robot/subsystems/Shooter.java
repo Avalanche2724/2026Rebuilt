@@ -23,8 +23,15 @@ public class Shooter extends SubsystemBase{
         configs.CurrentLimits.SupplyCurrentLimit = 120;
         configs.CurrentLimits.SupplyCurrentLowerTime = 2;
         configs.CurrentLimits.SupplyCurrentLowerLimit = 40;
-        configs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-
+        configs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        configs.Slot0.kP = 0.4;
+        configs.Slot0.kS = 0.25;
+        configs.Slot0.kV = 0.124;
+/*
+ * kp = 1
+ * ks = 0.298
+ * kv = 0.1241
+ */
         followMotor.setControl(new Follower(mainMotor.getDeviceID(), MotorAlignmentValue.Opposed));
 
         mainMotor.getConfigurator().apply(configs);
@@ -35,6 +42,5 @@ public class Shooter extends SubsystemBase{
         mainMotor.getVelocity().setUpdateFrequency(250);
         mainMotor.getSupplyCurrent().setUpdateFrequency(250);
         mainMotor.getSupplyVoltage().setUpdateFrequency(250);
-
     }
 }
