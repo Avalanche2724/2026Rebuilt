@@ -17,7 +17,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
 
 public class Spindexer extends SubsystemBase {
-  TalonFX mainMotor = new TalonFX(55);
+  private static final int MAIN_MOTOR_ID = 55;
+
+  private final TalonFX mainMotor = new TalonFX(MAIN_MOTOR_ID);
 
   // Simulation: simple rotor model driven by the TalonFX's simulated motor voltage.
   private final TalonFXSimState mainSim = mainMotor.getSimState();
@@ -25,8 +27,8 @@ public class Spindexer extends SubsystemBase {
       new DCMotorSim(
           LinearSystemId.createDCMotorSystem(
               DCMotor.getKrakenX60Foc(1),
-              0.0002, // kSpindexerJKgM2: moment of inertia, tune as needed
-              1.0 // kSpindexerGearing: output-to-input (rotor) ratio
+              0.0002, // moment of inertia (kg*m^2), tune as needed
+              1.0 // output-to-input (rotor) ratio
               ),
           DCMotor.getKrakenX60Foc(1));
 
@@ -42,20 +44,20 @@ public class Spindexer extends SubsystemBase {
           mainMotor.setControl(new VoltageOut(volts.getAsDouble()));
         },
         () -> {
-          mainMotor.setControl(new VoltageOut(0));
+          mainMotor.setControl(new VoltageOut(0.0));
         });
   }
 
   // CTRE Phoenix 6 simulation requires periodically updating rotor position/velocity.
   public void updateSim(double dtSeconds) {
-    final double batteryVoltage = RobotController.getBatteryVoltage();
+    double batteryVoltage = RobotController.getBatteryVoltage();
     mainSim.setSupplyVoltage(batteryVoltage);
 
     spindexerSim.setInputVoltage(mainSim.getMotorVoltage());
     spindexerSim.update(dtSeconds);
 
-    final double rotorPositionRot = spindexerSim.getAngularPositionRotations();
-    final double rotorVelocityRps =
+    double rotorPositionRot = spindexerSim.getAngularPositionRotations();
+    double rotorVelocityRps =
         RotationsPerSecond.convertFrom(
             spindexerSim.getAngularVelocityRadPerSec(), RadiansPerSecond);
 

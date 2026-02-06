@@ -15,15 +15,25 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Spindexer;
 
 public class RobotContainer {
-  public Shooter shooter = new Shooter();
-  public Spindexer spindexer = new Spindexer();
+  private static final String SHOOTER_SPEED_DASHBOARD_KEY = "SHOOTER SPEED";
+  private static final double SHOOTER_SPEED_DEFAULT_RPS = 33.5;
 
-  private double m_lastSimTime;
-  private Notifier m_simNotifier;
+  private static final String INDEXER_SPEED_DASHBOARD_KEY = "INDEXER SPEED";
+  private static final double INDEXER_SPEED_DEFAULT_VOLTS = 2.5;
+
+  private static final int DRIVER_CONTROLLER_PORT = 0;
+  private static final double SIM_THREAD_PERIOD_SECONDS = 0.005;
+
+  public final Shooter shooter = new Shooter();
+  public final Spindexer spindexer = new Spindexer();
+  private final CommandXboxController driver = new CommandXboxController(DRIVER_CONTROLLER_PORT);
+
+  private double lastSimTimeSeconds;
+  private Notifier simNotifier;
 
   public RobotContainer() {
-    SmartDashboard.putNumber("SHOOTER SPEED", 33.5);
-    SmartDashboard.putNumber("INDEXER SPEED", 2.5);
+    SmartDashboard.putNumber(SHOOTER_SPEED_DASHBOARD_KEY, SHOOTER_SPEED_DEFAULT_RPS);
+    SmartDashboard.putNumber(INDEXER_SPEED_DASHBOARD_KEY, INDEXER_SPEED_DEFAULT_VOLTS);
 
     if (RobotBase.isSimulation()) {
       startSimThread();
@@ -33,29 +43,37 @@ public class RobotContainer {
   }
 
   private void startSimThread() {
-    m_lastSimTime = Utils.getCurrentTimeSeconds();
+    lastSimTimeSeconds = Utils.getCurrentTimeSeconds();
 
     /* Run simulation at a faster rate so PID gains behave more reasonably */
-    m_simNotifier =
+    simNotifier =
         new Notifier(
             () -> {
-              final double currentTime = Utils.getCurrentTimeSeconds();
-              final double deltaTime = currentTime - m_lastSimTime;
-              m_lastSimTime = currentTime;
+              double currentTime = Utils.getCurrentTimeSeconds();
+              double deltaTime = currentTime - lastSimTimeSeconds;
+              lastSimTimeSeconds = currentTime;
 
               shooter.updateSim(deltaTime);
               spindexer.updateSim(deltaTime);
             });
-    m_simNotifier.startPeriodic(0.005);
+    simNotifier.startPeriodic(SIM_THREAD_PERIOD_SECONDS);
   }
-
-  private CommandXboxController driver = new CommandXboxController(0);
 
   private void configureBindings() {
     driver
         .a()
-        .whileTrue(spindexer.runAtVolts(() -> SmartDashboard.getNumber("INDEXER SPEED", 2.5)));
-    driver.b().whileTrue(shooter.runAtSpeed(() -> SmartDashboard.getNumber("SHOOTER SPEED", 33.5)));
+        .whileTrue(
+            spindexer.runAtVolts(
+                () ->
+                    SmartDashboard.getNumber(
+                        INDEXER_SPEED_DASHBOARD_KEY, INDEXER_SPEED_DEFAULT_VOLTS)));
+    driver
+        .b()
+        .whileTrue(
+            shooter.runAtSpeed(
+                () ->
+                    SmartDashboard.getNumber(
+                        SHOOTER_SPEED_DASHBOARD_KEY, SHOOTER_SPEED_DEFAULT_RPS)));
   }
 
   public Command getAutonomousCommand() {
