@@ -83,14 +83,14 @@ dependencies {
 tasks.register('downloadSources') {
     doLast {
         def componentIds = configurations.compileClasspath
-            .incoming
-            .resolutionResult
-            .allComponents
-            .collect { it.id }
+                .incoming
+                .resolutionResult
+                .allComponents
+                .collect { it.id }
         dependencies.createArtifactResolutionQuery()
-            .forComponents(componentIds)
-            .withArtifacts(JvmLibrary, SourcesArtifact)
-            .execute()
+                .forComponents(componentIds)
+                .withArtifacts(JvmLibrary, SourcesArtifact)
+                .execute()
     }
 }
 
@@ -104,15 +104,15 @@ tasks.register('syncSources') {
         outDir.mkdirs()
 
         def componentIds = configurations.compileClasspath
-            .incoming
-            .resolutionResult
-            .allComponents
-            .collect { it.id }
+                .incoming
+                .resolutionResult
+                .allComponents
+                .collect { it.id }
 
         def result = dependencies.createArtifactResolutionQuery()
-            .forComponents(componentIds)
-            .withArtifacts(JvmLibrary, SourcesArtifact)
-            .execute()
+                .forComponents(componentIds)
+                .withArtifacts(JvmLibrary, SourcesArtifact)
+                .execute()
 
         result.resolvedComponents.each { component ->
             def id = component.id.displayName
