@@ -6,6 +6,7 @@ plugins {
 
 import org.gradle.jvm.JvmLibrary
 import org.gradle.language.base.artifact.SourcesArtifact
+import org.gradle.api.artifacts.result.ResolvedArtifactResult
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -82,14 +83,53 @@ dependencies {
 tasks.register('downloadSources') {
     doLast {
         def componentIds = configurations.compileClasspath
-                .incoming
-                .resolutionResult
-                .allComponents
-                .collect { it.id }
+            .incoming
+            .resolutionResult
+            .allComponents
+            .collect { it.id }
         dependencies.createArtifactResolutionQuery()
-                .forComponents(componentIds)
-                .withArtifacts(JvmLibrary, SourcesArtifact)
-                .execute()
+            .forComponents(componentIds)
+            .withArtifacts(JvmLibrary, SourcesArtifact)
+            .execute()
+    }
+}
+
+tasks.register('syncSources') {
+    description = 'Downloads and unpacks -sources jars for compileClasspath into build/sources for easy ripgrep navigation.'
+    group = 'Help'
+
+    doLast {
+        def outDir = file("$buildDir/sources")
+        delete(outDir)
+        outDir.mkdirs()
+
+        def componentIds = configurations.compileClasspath
+            .incoming
+            .resolutionResult
+            .allComponents
+            .collect { it.id }
+
+        def result = dependencies.createArtifactResolutionQuery()
+            .forComponents(componentIds)
+            .withArtifacts(JvmLibrary, SourcesArtifact)
+            .execute()
+
+        result.resolvedComponents.each { component ->
+            def id = component.id.displayName
+            // Keep filesystem-friendly and stable across OSes.
+            def safe = id.replaceAll('[^A-Za-z0-9._-]+', '_')
+            def componentOut = new File(outDir, safe)
+            componentOut.mkdirs()
+
+            component.getArtifacts(SourcesArtifact).each { artifact ->
+                if (artifact instanceof ResolvedArtifactResult) {
+                    copy {
+                        from zipTree(artifact.file)
+                        into componentOut
+                    }
+                }
+            }
+        }
     }
 }
 
