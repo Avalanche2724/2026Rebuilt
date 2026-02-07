@@ -6,6 +6,7 @@ Do not create a new git branch when committing unless explicitly requested.
 Code Guidelines
 - Keep the code organized (clear package structure; avoid dumping logic into `Robot`).
 - Project convention: do not create per-subsystem packages (keep subsystems under `frc.robot.subsystems` unless explicitly directed otherwise).
+- Prefer including units in variable/method parameter names for raw numbers (examples: `speedRps`, `voltageVolts`, `dtSeconds`, `positionRot`).
 - Subsystem ordering (within a subsystem class/file):
   - `private static final` tuning/reused constants (SCREAMING_SNAKE_CASE, units in names) and other constants that benefit from being easy to scan.
   - Hardware fields + internal state (motors/sensors, sim objects, alerts, cached state). Avoid exposing hardware objects outside the subsystem.
@@ -24,6 +25,11 @@ Code Guidelines
 - Keep robot loop code non-blocking (no `Thread.sleep`, no long I/O in `periodic`/command `execute`).
 - Prefer command factory methods (e.g. `Commands.*`) over explicit command classes.
 - Avoid allocating new motor control request objects inside command lambdas (e.g. `new VoltageOut(...)`, `new VelocityVoltage(...)` in a command’s execute loop). Cache request objects as fields and use `with...(...)` to update setpoints.
+- Phoenix 6 status signals: cache `StatusSignal` fields you care about (e.g. velocity/current), and call `BaseStatusSignal.refreshAll(...)` in `periodic()` before reading/using their values.
+- Phoenix 6 configs: apply configs via a shared “apply with retry + status check” utility (avoid copy/pasting `getConfigurator().apply(...)` without checking status).
+- For persistent errors/warnings (e.g. a motor config failing to apply), prefer WPILib `Alert` so it shows up reliably on dashboards.
+- Motor subsystems should generally have a default command that sets a safe neutral output (coast/0V), so the mechanism doesn’t “latch” the last output when nothing is scheduled.
+- Simulation: keep sim stepping centralized (e.g. `RobotContainer`), but subsystems should still set `TalonFXSimState` orientation and motor type when in simulation.
 - Comments should explain "why" and constraints; avoid narrating obvious code.
 - Build before commit: `./gradlew build` (build runs formatting via Spotless).
 
