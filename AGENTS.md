@@ -37,10 +37,9 @@ Sources (vendor + WPILib)
 - Use WPILib JDK to avoid Gradle errors: `JAVA_HOME=~/wpilib/2026/jdk`.
 - Download all Java sources jars with Gradle: `./gradlew downloadSources`.
 - Unpack sources into `build/sources/` for fast searching: `./gradlew syncSources`.
-- Vendor libraries:
-  - Vendordep definitions live in `vendordeps/*.json` (Maven URLs + artifacts).
-  - Sources jars land in `~/.gradle/caches/modules-2/files-2.1/<group>/<artifact>/<version>/`.
-  - Inspect by searching `build/sources/` with `rg -n`, or with `jar tf <sources.jar>` / `unzip -q <sources.jar> -d /tmp/<dir>`.
-- WPILib:
-  - WPILib sources jars are also in `~/.gradle/caches/modules-2/files-2.1/edu.wpi.first/`.
-  - Inspect by searching `build/sources/edu.wpi.first.*` with `rg -n`, or by unzipping jars from the cache.
+- Vendordep definitions live in `vendordeps/*.json` (Maven URLs + artifacts).
+- Prefer inspecting sources via `build/sources/` (run `./gradlew syncSources` first), then use `rg -n` to search.
+
+Search tips
+- Prefer `rg -n` / `rg --files` over `find` for code lookups.
+- If you do use `find`, avoid shallow `-maxdepth` (it’s easy to miss deeply nested vendor sources), and be careful with `-o` precedence; use parentheses like `find ... \\( -name 'A' -o -name 'B' \\)` so results are what you expect.
