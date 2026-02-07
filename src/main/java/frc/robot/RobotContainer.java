@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Spindexer;
 
@@ -26,6 +27,7 @@ public class RobotContainer {
 
   public final Shooter shooter = new Shooter();
   public final Spindexer spindexer = new Spindexer();
+  public final Climber climber = new Climber();
   private final CommandXboxController driver = new CommandXboxController(DRIVER_CONTROLLER_PORT);
 
   private double lastSimTimeSeconds;
