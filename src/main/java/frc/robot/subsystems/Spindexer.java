@@ -21,7 +21,6 @@ public class Spindexer extends SubsystemBase {
 
   private final TalonFX mainMotor = new TalonFX(MAIN_MOTOR_ID);
 
-  // Simulation: simple rotor model driven by the TalonFX's simulated motor voltage.
   private final TalonFXSimState mainSim = mainMotor.getSimState();
   private final DCMotorSim spindexerSim =
       new DCMotorSim(
@@ -48,7 +47,6 @@ public class Spindexer extends SubsystemBase {
         });
   }
 
-  // CTRE Phoenix 6 simulation requires periodically updating rotor position/velocity.
   public void updateSim(double dtSeconds) {
     double batteryVoltage = RobotController.getBatteryVoltage();
     mainSim.setSupplyVoltage(batteryVoltage);

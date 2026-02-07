@@ -26,7 +26,6 @@ public class Shooter extends SubsystemBase {
   private final TalonFX mainMotor = new TalonFX(MAIN_MOTOR_ID);
   private final TalonFX followMotor = new TalonFX(FOLLOW_MOTOR_ID);
 
-  // Simulation: simple rotor model driven by the TalonFX's simulated motor voltage.
   private final TalonFXSimState mainSim = mainMotor.getSimState();
   private final TalonFXSimState followSim = followMotor.getSimState();
   private final DCMotorSim shooterSim =
@@ -72,7 +71,6 @@ public class Shooter extends SubsystemBase {
         });
   }
 
-  // CTRE Phoenix 6 simulation requires periodically updating rotor position/velocity.
   public void updateSim(double dtSeconds) {
     double batteryVoltage = RobotController.getBatteryVoltage();
     mainSim.setSupplyVoltage(batteryVoltage);
