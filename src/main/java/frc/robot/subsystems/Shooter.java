@@ -1,8 +1,6 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -13,10 +11,10 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.MotorSimUtils;
 import java.util.function.DoubleSupplier;
 
 public class Shooter extends SubsystemBase {
@@ -25,6 +23,9 @@ public class Shooter extends SubsystemBase {
 
   private final TalonFX mainMotor = new TalonFX(MAIN_MOTOR_ID);
   private final TalonFX followMotor = new TalonFX(FOLLOW_MOTOR_ID);
+
+  private final VelocityVoltage velocityRequest = new VelocityVoltage(0.0);
+  private final VoltageOut voltageRequest = new VoltageOut(0.0);
 
   private final TalonFXSimState mainSim = mainMotor.getSimState();
   private final TalonFXSimState followSim = followMotor.getSimState();
@@ -49,45 +50,27 @@ public class Shooter extends SubsystemBase {
     configs.Slot0.kS = 0.28;
     configs.Slot0.kV = 0.124;
 
-    followMotor.setControl(new Follower(mainMotor.getDeviceID(), MotorAlignmentValue.Opposed));
-
     mainMotor.getConfigurator().apply(configs);
     followMotor.getConfigurator().apply(configs);
 
-    mainMotor.getMotorVoltage().setUpdateFrequency(250.0);
-    mainMotor.getTorqueCurrent().setUpdateFrequency(250.0);
-    mainMotor.getVelocity().setUpdateFrequency(250.0);
-    mainMotor.getSupplyCurrent().setUpdateFrequency(250.0);
-    mainMotor.getSupplyVoltage().setUpdateFrequency(250.0);
+    followMotor.setControl(new Follower(mainMotor.getDeviceID(), MotorAlignmentValue.Opposed));
+
+    var motorVoltage = mainMotor.getMotorVoltage();
+    var torqueCurrent = mainMotor.getTorqueCurrent();
+    var velocity = mainMotor.getVelocity();
+    var supplyCurrent = mainMotor.getSupplyCurrent();
+    var supplyVoltage = mainMotor.getSupplyVoltage();
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        250.0, motorVoltage, torqueCurrent, velocity, supplyCurrent, supplyVoltage);
   }
 
   public Command runAtSpeed(DoubleSupplier speedRps) {
-    return this.startEnd(
-        () -> {
-          mainMotor.setControl(new VelocityVoltage(speedRps.getAsDouble()));
-        },
-        () -> {
-          mainMotor.setControl(new VoltageOut(0.0));
-        });
+    return this.runEnd(
+        () -> mainMotor.setControl(velocityRequest.withVelocity(speedRps.getAsDouble())),
+        () -> mainMotor.setControl(voltageRequest.withOutput(0.0)));
   }
 
-  @SuppressWarnings("DuplicatedCode")
   public void updateSim(double dtSeconds) {
-    double batteryVoltage = RobotController.getBatteryVoltage();
-    mainSim.setSupplyVoltage(batteryVoltage);
-    followSim.setSupplyVoltage(batteryVoltage);
-
-    shooterSim.setInputVoltage(mainSim.getMotorVoltage());
-    shooterSim.update(dtSeconds);
-
-    double rotorPositionRot = shooterSim.getAngularPositionRotations();
-    double rotorVelocityRps =
-        RotationsPerSecond.convertFrom(shooterSim.getAngularVelocityRadPerSec(), RadiansPerSecond);
-
-    mainSim.setRawRotorPosition(rotorPositionRot);
-    mainSim.setRotorVelocity(rotorVelocityRps);
-
-    followSim.setRawRotorPosition(rotorPositionRot);
-    followSim.setRotorVelocity(rotorVelocityRps);
+    MotorSimUtils.updateTalonFxRotorSim(dtSeconds, shooterSim, mainSim, followSim);
   }
 }

@@ -22,6 +22,7 @@ Code Guidelines
 - Prefer immutable where reasonable (`final` fields ok); do not mark locals `final`; for non-primitive locals prefer `var`; minimize global/static state.
 - Keep robot loop code non-blocking (no `Thread.sleep`, no long I/O in `periodic`/command `execute`).
 - Prefer command factory methods (e.g. `Commands.*`) over explicit command classes.
+- Avoid allocating new motor control request objects inside command lambdas (e.g. `new VoltageOut(...)`, `new VelocityVoltage(...)` in a command’s execute loop). Cache request objects as fields and use `with...(...)` to update setpoints.
 - Comments should explain "why" and constraints; avoid narrating obvious code.
 - Build before commit: `./gradlew build` (build runs formatting via Spotless).
 

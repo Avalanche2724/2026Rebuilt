@@ -29,7 +29,7 @@ public class Climber extends SubsystemBase {
     motor.getConfigurator().apply(configs);
   }
 
-  public void setPositionRotations(double positionRotations) {
+  private void setPositionRotations(double positionRotations) {
     motor.setControl(positionRequest.withPosition(positionRotations));
   }
 
@@ -37,7 +37,7 @@ public class Climber extends SubsystemBase {
     return motor.getPosition().getValueAsDouble();
   }
 
-  public void stop() {
+  private void stop() {
     motor.setControl(voltageRequest.withOutput(0.0));
   }
 
@@ -46,8 +46,7 @@ public class Climber extends SubsystemBase {
   }
 
   public Command runAtVolts(DoubleSupplier volts) {
-    return this.startEnd(
-        () -> motor.setControl(voltageRequest.withOutput(volts.getAsDouble())),
-        () -> motor.setControl(voltageRequest.withOutput(0.0)));
+    return this.runEnd(
+        () -> motor.setControl(voltageRequest.withOutput(volts.getAsDouble())), this::stop);
   }
 }
