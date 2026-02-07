@@ -71,6 +71,7 @@ public class Shooter extends SubsystemBase {
         });
   }
 
+  @SuppressWarnings("DuplicatedCode")
   public void updateSim(double dtSeconds) {
     double batteryVoltage = RobotController.getBatteryVoltage();
     mainSim.setSupplyVoltage(batteryVoltage);

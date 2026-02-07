@@ -24,7 +24,7 @@ public class Climber extends SubsystemBase {
     configs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     // Starting point only; tune on-robot.
-    configs.Slot0.kP = 0.0; //15.0;
+    configs.Slot0.kP = 0.0; // 15.0;
 
     motor.getConfigurator().apply(configs);
   }

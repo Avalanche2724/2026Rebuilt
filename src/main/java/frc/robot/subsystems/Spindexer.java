@@ -1,8 +1,5 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -14,7 +11,11 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import java.util.function.DoubleSupplier;
+
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 public class Spindexer extends SubsystemBase {
   private static final int MAIN_MOTOR_ID = 55;
@@ -47,6 +48,7 @@ public class Spindexer extends SubsystemBase {
         });
   }
 
+  @SuppressWarnings("DuplicatedCode")
   public void updateSim(double dtSeconds) {
     double batteryVoltage = RobotController.getBatteryVoltage();
     mainSim.setSupplyVoltage(batteryVoltage);
